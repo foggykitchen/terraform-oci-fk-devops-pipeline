@@ -62,6 +62,7 @@ variable "deploy_pipelines" {
       namespace                               = optional(string)
       kubernetes_manifest_deploy_artifact_ids = optional(list(string), [])
       helm_chart_deploy_artifact_id           = optional(string)
+      release_name                            = optional(string)
       values_artifact_ids                     = optional(list(string), [])
       are_hooks_enabled                       = optional(bool)
       should_reuse_values                     = optional(bool)

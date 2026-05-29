@@ -222,6 +222,7 @@ resource "oci_devops_deploy_stage" "root" {
   namespace                                = each.value.stage_type == "OKE_DEPLOYMENT" ? try(each.value.namespace, null) : null
   kubernetes_manifest_deploy_artifact_ids  = contains(["OKE_DEPLOYMENT", "OKE_CANARY_DEPLOYMENT", "OKE_BLUE_GREEN_DEPLOYMENT"], each.value.stage_type) ? try(each.value.kubernetes_manifest_deploy_artifact_ids, null) : null
   helm_chart_deploy_artifact_id            = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.helm_chart_deploy_artifact_id, null) : null
+  release_name                             = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.release_name, null) : null
   values_artifact_ids                      = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.values_artifact_ids, null) : null
   are_hooks_enabled                        = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.are_hooks_enabled, null) : null
   should_reuse_values                      = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.should_reuse_values, null) : null
@@ -296,6 +297,7 @@ resource "oci_devops_deploy_stage" "dependent" {
   namespace                                = each.value.stage_type == "OKE_DEPLOYMENT" ? try(each.value.namespace, null) : null
   kubernetes_manifest_deploy_artifact_ids  = contains(["OKE_DEPLOYMENT", "OKE_CANARY_DEPLOYMENT", "OKE_BLUE_GREEN_DEPLOYMENT"], each.value.stage_type) ? try(each.value.kubernetes_manifest_deploy_artifact_ids, null) : null
   helm_chart_deploy_artifact_id            = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.helm_chart_deploy_artifact_id, null) : null
+  release_name                             = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.release_name, null) : null
   values_artifact_ids                      = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.values_artifact_ids, null) : null
   are_hooks_enabled                        = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.are_hooks_enabled, null) : null
   should_reuse_values                      = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.should_reuse_values, null) : null
