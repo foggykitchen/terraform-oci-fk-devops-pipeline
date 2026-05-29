@@ -219,7 +219,7 @@ resource "oci_devops_deploy_stage" "root" {
   display_name                             = each.value.display_name
   description                              = coalesce(each.value.description, each.value.display_name)
   oke_cluster_deploy_environment_id        = contains(["OKE_HELM_CHART_DEPLOYMENT", "OKE_DEPLOYMENT", "OKE_CANARY_DEPLOYMENT", "OKE_BLUE_GREEN_DEPLOYMENT"], each.value.stage_type) ? try(each.value.deploy_environment_id, null) : null
-  namespace                                = each.value.stage_type == "OKE_DEPLOYMENT" ? try(each.value.namespace, null) : null
+  namespace                                = contains(["OKE_DEPLOYMENT", "OKE_HELM_CHART_DEPLOYMENT"], each.value.stage_type) ? try(each.value.namespace, null) : null
   kubernetes_manifest_deploy_artifact_ids  = contains(["OKE_DEPLOYMENT", "OKE_CANARY_DEPLOYMENT", "OKE_BLUE_GREEN_DEPLOYMENT"], each.value.stage_type) ? try(each.value.kubernetes_manifest_deploy_artifact_ids, null) : null
   helm_chart_deploy_artifact_id            = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.helm_chart_deploy_artifact_id, null) : null
   release_name                             = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.release_name, null) : null
@@ -294,7 +294,7 @@ resource "oci_devops_deploy_stage" "dependent" {
   display_name                             = each.value.display_name
   description                              = coalesce(each.value.description, each.value.display_name)
   oke_cluster_deploy_environment_id        = contains(["OKE_HELM_CHART_DEPLOYMENT", "OKE_DEPLOYMENT", "OKE_CANARY_DEPLOYMENT", "OKE_BLUE_GREEN_DEPLOYMENT"], each.value.stage_type) ? try(each.value.deploy_environment_id, null) : null
-  namespace                                = each.value.stage_type == "OKE_DEPLOYMENT" ? try(each.value.namespace, null) : null
+  namespace                                = contains(["OKE_DEPLOYMENT", "OKE_HELM_CHART_DEPLOYMENT"], each.value.stage_type) ? try(each.value.namespace, null) : null
   kubernetes_manifest_deploy_artifact_ids  = contains(["OKE_DEPLOYMENT", "OKE_CANARY_DEPLOYMENT", "OKE_BLUE_GREEN_DEPLOYMENT"], each.value.stage_type) ? try(each.value.kubernetes_manifest_deploy_artifact_ids, null) : null
   helm_chart_deploy_artifact_id            = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.helm_chart_deploy_artifact_id, null) : null
   release_name                             = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.release_name, null) : null
