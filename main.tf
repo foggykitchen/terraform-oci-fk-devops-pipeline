@@ -144,7 +144,10 @@ resource "oci_devops_build_pipeline_stage" "dependent" {
     dynamic "items" {
       for_each = each.value.predecessor_keys
       content {
-        id = contains(keys(local.build_root_stage_map), "${each.value.pipeline_key}:${items.value}") ? oci_devops_build_pipeline_stage.root["${each.value.pipeline_key}:${items.value}"].id : oci_devops_build_pipeline_stage.dependent["${each.value.pipeline_key}:${items.value}"].id
+        id = coalesce(
+          try(oci_devops_build_pipeline_stage.root["${each.value.pipeline_key}:${items.value}"].id, null),
+          oci_devops_build_pipeline_stage.dependent["${each.value.pipeline_key}:${items.value}"].id
+        )
       }
     }
   }
