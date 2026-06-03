@@ -142,7 +142,7 @@ For OKE canary deployment pipelines, the module supports the OCI DevOps stage ch
 3. `OKE_CANARY_APPROVAL`
 4. `OKE_DEPLOYMENT` for production release
 
-The canary deployment stage uses `canary_strategy` with an ingress resource and canary namespace. The traffic shift and approval stages reference upstream stages by logical stage keys, allowing the module to resolve the generated OCI DevOps stage OCIDs inside the same pipeline graph.
+The canary deployment stage uses `canary_strategy` with an ingress resource and canary namespace. The traffic shift and approval stages reference upstream stages by logical stage keys, allowing the module to resolve the generated OCI DevOps stage OCIDs inside the same pipeline graph. Deploy stage dependencies are materialized across multiple resource levels so chained stages can depend on earlier generated stages without creating a Terraform graph cycle.
 
 ---
 

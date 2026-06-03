@@ -20,7 +20,9 @@ output "deploy_stage_ids" {
   description = "Map of deploy stage OCIDs keyed by pipeline:stage."
   value = merge(
     { for key, stage in oci_devops_deploy_stage.root : key => stage.id },
-    { for key, stage in oci_devops_deploy_stage.dependent : key => stage.id }
+    { for key, stage in oci_devops_deploy_stage.dependent : key => stage.id },
+    { for key, stage in oci_devops_deploy_stage.second_dependent : key => stage.id },
+    { for key, stage in oci_devops_deploy_stage.third_dependent : key => stage.id }
   )
 }
 

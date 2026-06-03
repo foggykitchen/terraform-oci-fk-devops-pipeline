@@ -40,9 +40,33 @@ locals {
     if length(stage.predecessor_keys) == 0
   }
 
-  deploy_dependent_stage_map = {
+  deploy_dependent_candidate_stage_map = {
     for key, stage in local.deploy_stage_map : key => stage
     if length(stage.predecessor_keys) > 0
+  }
+
+  deploy_dependent_stage_map = {
+    for key, stage in local.deploy_dependent_candidate_stage_map : key => stage
+    if alltrue([
+      for predecessor_key in stage.predecessor_keys :
+      contains(keys(local.deploy_root_stage_map), "${stage.pipeline_key}:${predecessor_key}")
+    ])
+  }
+
+  deploy_second_dependent_stage_map = {
+    for key, stage in local.deploy_dependent_candidate_stage_map : key => stage
+    if !contains(keys(local.deploy_dependent_stage_map), key) && alltrue([
+      for predecessor_key in stage.predecessor_keys :
+      contains(concat(keys(local.deploy_root_stage_map), keys(local.deploy_dependent_stage_map)), "${stage.pipeline_key}:${predecessor_key}")
+    ])
+  }
+
+  deploy_third_dependent_stage_map = {
+    for key, stage in local.deploy_dependent_candidate_stage_map : key => stage
+    if !contains(concat(keys(local.deploy_dependent_stage_map), keys(local.deploy_second_dependent_stage_map)), key) && alltrue([
+      for predecessor_key in stage.predecessor_keys :
+      contains(concat(keys(local.deploy_root_stage_map), keys(local.deploy_dependent_stage_map), keys(local.deploy_second_dependent_stage_map)), "${stage.pipeline_key}:${predecessor_key}")
+    ])
   }
 }
 
@@ -308,6 +332,90 @@ resource "oci_devops_deploy_stage" "dependent" {
   timeout_in_seconds                      = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.timeout_in_seconds, null) : null
   oke_canary_deploy_stage_id = each.value.stage_type == "OKE_CANARY_TRAFFIC_SHIFT" ? try(
     oci_devops_deploy_stage.root["${each.value.pipeline_key}:${each.value.oke_canary_deploy_stage_key}"].id,
+    null
+  ) : null
+  oke_canary_traffic_shift_deploy_stage_id = null
+  oke_blue_green_deploy_stage_id = each.value.stage_type == "OKE_BLUE_GREEN_TRAFFIC_SHIFT" ? try(
+    oci_devops_deploy_stage.root["${each.value.pipeline_key}:${each.value.oke_blue_green_deploy_stage_key}"].id,
+    null
+  ) : null
+  purpose            = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.purpose, null) : null
+  deploy_artifact_id = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.deploy_artifact_id, null) : null
+
+  deploy_stage_predecessor_collection {
+    dynamic "items" {
+      for_each = each.value.predecessor_keys
+      content {
+        id = oci_devops_deploy_stage.root["${each.value.pipeline_key}:${items.value}"].id
+      }
+    }
+  }
+
+  dynamic "canary_strategy" {
+    for_each = each.value.stage_type == "OKE_CANARY_DEPLOYMENT" && try(each.value.canary_strategy, null) != null ? [each.value.canary_strategy] : []
+    content {
+      ingress_name  = canary_strategy.value.ingress_name
+      namespace     = canary_strategy.value.namespace
+      strategy_type = canary_strategy.value.strategy_type
+    }
+  }
+
+  dynamic "rollout_policy" {
+    for_each = each.value.stage_type == "OKE_CANARY_TRAFFIC_SHIFT" && try(each.value.rollout_policy, null) != null ? [each.value.rollout_policy] : []
+    content {
+      batch_count            = rollout_policy.value.batch_count
+      batch_delay_in_seconds = rollout_policy.value.batch_delay_in_seconds
+      batch_percentage       = rollout_policy.value.batch_percentage
+      ramp_limit_percent     = rollout_policy.value.ramp_limit_percent
+    }
+  }
+
+  dynamic "approval_policy" {
+    for_each = contains(["OKE_CANARY_APPROVAL", "MANUAL_APPROVAL"], each.value.stage_type) && try(each.value.approval_policy, null) != null ? [each.value.approval_policy] : []
+    content {
+      approval_policy_type         = approval_policy.value.approval_policy_type
+      number_of_approvals_required = approval_policy.value.number_of_approvals_required
+    }
+  }
+
+  dynamic "rollback_policy" {
+    for_each = each.value.stage_type == "OKE_DEPLOYMENT" && try(each.value.rollback_policy, null) != null ? [each.value.rollback_policy] : []
+    content {
+      policy_type = rollback_policy.value.policy_type
+    }
+  }
+
+  dynamic "blue_green_strategy" {
+    for_each = each.value.stage_type == "OKE_BLUE_GREEN_DEPLOYMENT" && try(each.value.blue_green_strategy, null) != null ? [each.value.blue_green_strategy] : []
+    content {
+      ingress_name  = blue_green_strategy.value.ingress_name
+      namespace_a   = blue_green_strategy.value.namespace_a
+      namespace_b   = blue_green_strategy.value.namespace_b
+      strategy_type = blue_green_strategy.value.strategy_type
+    }
+  }
+}
+
+resource "oci_devops_deploy_stage" "second_dependent" {
+  for_each = local.deploy_second_dependent_stage_map
+
+  deploy_pipeline_id                      = oci_devops_deploy_pipeline.this[each.value.pipeline_key].id
+  deploy_stage_type                       = each.value.stage_type
+  display_name                            = each.value.display_name
+  description                             = coalesce(each.value.description, each.value.display_name)
+  oke_cluster_deploy_environment_id       = contains(["OKE_HELM_CHART_DEPLOYMENT", "OKE_DEPLOYMENT", "OKE_CANARY_DEPLOYMENT", "OKE_BLUE_GREEN_DEPLOYMENT"], each.value.stage_type) ? try(each.value.deploy_environment_id, null) : null
+  namespace                               = contains(["OKE_DEPLOYMENT", "OKE_HELM_CHART_DEPLOYMENT"], each.value.stage_type) ? try(each.value.namespace, null) : null
+  kubernetes_manifest_deploy_artifact_ids = contains(["OKE_DEPLOYMENT", "OKE_CANARY_DEPLOYMENT", "OKE_BLUE_GREEN_DEPLOYMENT"], each.value.stage_type) ? try(each.value.kubernetes_manifest_deploy_artifact_ids, null) : null
+  helm_chart_deploy_artifact_id           = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.helm_chart_deploy_artifact_id, null) : null
+  release_name                            = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.release_name, null) : null
+  values_artifact_ids                     = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.values_artifact_ids, null) : null
+  are_hooks_enabled                       = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.are_hooks_enabled, null) : null
+  should_reuse_values                     = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.should_reuse_values, null) : null
+  should_not_wait                         = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.should_not_wait, null) : null
+  max_history                             = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.max_history, null) : null
+  timeout_in_seconds                      = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.timeout_in_seconds, null) : null
+  oke_canary_deploy_stage_id = each.value.stage_type == "OKE_CANARY_TRAFFIC_SHIFT" ? try(
+    oci_devops_deploy_stage.root["${each.value.pipeline_key}:${each.value.oke_canary_deploy_stage_key}"].id,
     try(oci_devops_deploy_stage.dependent["${each.value.pipeline_key}:${each.value.oke_canary_deploy_stage_key}"].id, null)
   ) : null
   oke_canary_traffic_shift_deploy_stage_id = each.value.stage_type == "OKE_CANARY_APPROVAL" ? try(
@@ -329,6 +437,110 @@ resource "oci_devops_deploy_stage" "dependent" {
           keys(local.deploy_root_stage_map),
           "${each.value.pipeline_key}:${items.value}"
         ) ? oci_devops_deploy_stage.root["${each.value.pipeline_key}:${items.value}"].id : oci_devops_deploy_stage.dependent["${each.value.pipeline_key}:${items.value}"].id
+      }
+    }
+  }
+
+  dynamic "canary_strategy" {
+    for_each = each.value.stage_type == "OKE_CANARY_DEPLOYMENT" && try(each.value.canary_strategy, null) != null ? [each.value.canary_strategy] : []
+    content {
+      ingress_name  = canary_strategy.value.ingress_name
+      namespace     = canary_strategy.value.namespace
+      strategy_type = canary_strategy.value.strategy_type
+    }
+  }
+
+  dynamic "rollout_policy" {
+    for_each = each.value.stage_type == "OKE_CANARY_TRAFFIC_SHIFT" && try(each.value.rollout_policy, null) != null ? [each.value.rollout_policy] : []
+    content {
+      batch_count            = rollout_policy.value.batch_count
+      batch_delay_in_seconds = rollout_policy.value.batch_delay_in_seconds
+      batch_percentage       = rollout_policy.value.batch_percentage
+      ramp_limit_percent     = rollout_policy.value.ramp_limit_percent
+    }
+  }
+
+  dynamic "approval_policy" {
+    for_each = contains(["OKE_CANARY_APPROVAL", "MANUAL_APPROVAL"], each.value.stage_type) && try(each.value.approval_policy, null) != null ? [each.value.approval_policy] : []
+    content {
+      approval_policy_type         = approval_policy.value.approval_policy_type
+      number_of_approvals_required = approval_policy.value.number_of_approvals_required
+    }
+  }
+
+  dynamic "rollback_policy" {
+    for_each = each.value.stage_type == "OKE_DEPLOYMENT" && try(each.value.rollback_policy, null) != null ? [each.value.rollback_policy] : []
+    content {
+      policy_type = rollback_policy.value.policy_type
+    }
+  }
+
+  dynamic "blue_green_strategy" {
+    for_each = each.value.stage_type == "OKE_BLUE_GREEN_DEPLOYMENT" && try(each.value.blue_green_strategy, null) != null ? [each.value.blue_green_strategy] : []
+    content {
+      ingress_name  = blue_green_strategy.value.ingress_name
+      namespace_a   = blue_green_strategy.value.namespace_a
+      namespace_b   = blue_green_strategy.value.namespace_b
+      strategy_type = blue_green_strategy.value.strategy_type
+    }
+  }
+}
+
+resource "oci_devops_deploy_stage" "third_dependent" {
+  for_each = local.deploy_third_dependent_stage_map
+
+  deploy_pipeline_id                      = oci_devops_deploy_pipeline.this[each.value.pipeline_key].id
+  deploy_stage_type                       = each.value.stage_type
+  display_name                            = each.value.display_name
+  description                             = coalesce(each.value.description, each.value.display_name)
+  oke_cluster_deploy_environment_id       = contains(["OKE_HELM_CHART_DEPLOYMENT", "OKE_DEPLOYMENT", "OKE_CANARY_DEPLOYMENT", "OKE_BLUE_GREEN_DEPLOYMENT"], each.value.stage_type) ? try(each.value.deploy_environment_id, null) : null
+  namespace                               = contains(["OKE_DEPLOYMENT", "OKE_HELM_CHART_DEPLOYMENT"], each.value.stage_type) ? try(each.value.namespace, null) : null
+  kubernetes_manifest_deploy_artifact_ids = contains(["OKE_DEPLOYMENT", "OKE_CANARY_DEPLOYMENT", "OKE_BLUE_GREEN_DEPLOYMENT"], each.value.stage_type) ? try(each.value.kubernetes_manifest_deploy_artifact_ids, null) : null
+  helm_chart_deploy_artifact_id           = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.helm_chart_deploy_artifact_id, null) : null
+  release_name                            = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.release_name, null) : null
+  values_artifact_ids                     = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.values_artifact_ids, null) : null
+  are_hooks_enabled                       = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.are_hooks_enabled, null) : null
+  should_reuse_values                     = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.should_reuse_values, null) : null
+  should_not_wait                         = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.should_not_wait, null) : null
+  max_history                             = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.max_history, null) : null
+  timeout_in_seconds                      = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.timeout_in_seconds, null) : null
+  oke_canary_deploy_stage_id = each.value.stage_type == "OKE_CANARY_TRAFFIC_SHIFT" ? try(
+    oci_devops_deploy_stage.root["${each.value.pipeline_key}:${each.value.oke_canary_deploy_stage_key}"].id,
+    try(
+      oci_devops_deploy_stage.dependent["${each.value.pipeline_key}:${each.value.oke_canary_deploy_stage_key}"].id,
+      try(oci_devops_deploy_stage.second_dependent["${each.value.pipeline_key}:${each.value.oke_canary_deploy_stage_key}"].id, null)
+    )
+  ) : null
+  oke_canary_traffic_shift_deploy_stage_id = each.value.stage_type == "OKE_CANARY_APPROVAL" ? try(
+    oci_devops_deploy_stage.root["${each.value.pipeline_key}:${each.value.oke_canary_traffic_shift_stage_key}"].id,
+    try(
+      oci_devops_deploy_stage.dependent["${each.value.pipeline_key}:${each.value.oke_canary_traffic_shift_stage_key}"].id,
+      try(oci_devops_deploy_stage.second_dependent["${each.value.pipeline_key}:${each.value.oke_canary_traffic_shift_stage_key}"].id, null)
+    )
+  ) : null
+  oke_blue_green_deploy_stage_id = each.value.stage_type == "OKE_BLUE_GREEN_TRAFFIC_SHIFT" ? try(
+    oci_devops_deploy_stage.root["${each.value.pipeline_key}:${each.value.oke_blue_green_deploy_stage_key}"].id,
+    try(
+      oci_devops_deploy_stage.dependent["${each.value.pipeline_key}:${each.value.oke_blue_green_deploy_stage_key}"].id,
+      try(oci_devops_deploy_stage.second_dependent["${each.value.pipeline_key}:${each.value.oke_blue_green_deploy_stage_key}"].id, null)
+    )
+  ) : null
+  purpose            = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.purpose, null) : null
+  deploy_artifact_id = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.deploy_artifact_id, null) : null
+
+  deploy_stage_predecessor_collection {
+    dynamic "items" {
+      for_each = each.value.predecessor_keys
+      content {
+        id = contains(
+          keys(local.deploy_root_stage_map),
+          "${each.value.pipeline_key}:${items.value}"
+          ) ? oci_devops_deploy_stage.root["${each.value.pipeline_key}:${items.value}"].id : (
+          contains(
+            keys(local.deploy_dependent_stage_map),
+            "${each.value.pipeline_key}:${items.value}"
+          ) ? oci_devops_deploy_stage.dependent["${each.value.pipeline_key}:${items.value}"].id : oci_devops_deploy_stage.second_dependent["${each.value.pipeline_key}:${items.value}"].id
+        )
       }
     }
   }
