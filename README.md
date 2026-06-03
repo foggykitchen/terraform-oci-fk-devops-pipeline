@@ -2,7 +2,7 @@
 
 This repository contains a reusable **Terraform/OpenTofu module** and progressive examples for provisioning **OCI DevOps build and deploy pipelines**.
 
-It is part of the **[FoggyKitchen.com training ecosystem](https://foggykitchen.com/courses-2/)** and is designed to compose with **`terraform-oci-fk-devops`**, which provides the surrounding shared DevOps resources such as projects, repositories, artifacts, deploy environments, and triggers.
+It is part of the **[FoggyKitchen.com training ecosystem](https://foggykitchen.com/courses-2/)** and is designed to compose with **`terraform-oci-fk-devops`**, which provides the surrounding shared DevOps resources such as projects, repositories, artifacts, and deploy environments.
 
 ---
 
@@ -12,6 +12,7 @@ The goal of this module is to model the **pipeline graph** itself:
 
 - build pipelines
 - build stages
+- build triggers
 - deploy pipelines
 - deploy stages
 
@@ -34,6 +35,7 @@ The module creates:
 
 - OCI DevOps build pipelines
 - OCI DevOps build pipeline stages
+- OCI DevOps triggers that start build pipelines
 - OCI DevOps deploy pipelines
 - OCI DevOps deploy stages
 
@@ -123,6 +125,7 @@ module "fk_devops_pipeline" {
 | `project_id` | `string` | yes | OCI DevOps project OCID |
 | `build_pipelines` | `map(object)` | no | Build pipeline definitions including stage lists |
 | `deploy_pipelines` | `map(object)` | no | Deploy pipeline definitions including stage lists |
+| `triggers` | `map(object)` | no | Trigger definitions that start build pipelines managed by this module |
 
 The module expects all referenced repositories, artifacts, and environments to already exist.
 
@@ -136,13 +139,15 @@ The module expects all referenced repositories, artifacts, and environments to a
 | `build_stage_ids` | Map of build stage OCIDs keyed by `pipeline:stage` |
 | `deploy_pipeline_ids` | Map of deploy pipeline OCIDs |
 | `deploy_stage_ids` | Map of deploy stage OCIDs keyed by `pipeline:stage` |
+| `trigger_ids` | Map of trigger OCIDs |
+| `trigger_urls` | Map of trigger URLs |
 
 ---
 
 ## Typical Integration Pattern
 
-1. Create project, repositories, artifacts, environments, and triggers with `terraform-oci-fk-devops`
-2. Create build and deploy pipelines with `terraform-oci-fk-devops-pipeline`
+1. Create project, repositories, artifacts, and environments with `terraform-oci-fk-devops`
+2. Create build pipelines, deploy pipelines, stages, and pipeline triggers with `terraform-oci-fk-devops-pipeline`
 3. Compose the two modules in a higher-level lesson, blueprint, or landing zone
 
 This keeps the shared DevOps control plane separated from the delivery graph definition.

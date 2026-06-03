@@ -103,6 +103,22 @@ variable "deploy_pipelines" {
   default = {}
 }
 
+variable "triggers" {
+  description = "Map of OCI DevOps triggers keyed by logical name."
+  type = map(object({
+    display_name       = string
+    description        = optional(string)
+    build_pipeline_key = string
+    trigger_source     = optional(string, "DEVOPS_CODE_REPOSITORY")
+    events             = optional(list(string), ["PUSH"])
+    repository_id      = optional(string)
+    repository_name    = optional(string)
+    head_ref           = optional(string)
+    base_ref           = optional(string)
+  }))
+  default = {}
+}
+
 variable "defined_tags" {
   description = "Defined tags applied to supported resources."
   type        = map(string)

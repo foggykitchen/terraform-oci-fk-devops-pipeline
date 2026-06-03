@@ -23,3 +23,13 @@ output "deploy_stage_ids" {
     { for key, stage in oci_devops_deploy_stage.dependent : key => stage.id }
   )
 }
+
+output "trigger_ids" {
+  description = "Map of trigger OCIDs keyed by logical name."
+  value       = { for key, trigger in oci_devops_trigger.this : key => trigger.id }
+}
+
+output "trigger_urls" {
+  description = "Map of trigger URLs keyed by logical name."
+  value       = { for key, trigger in oci_devops_trigger.this : key => trigger.trigger_url }
+}

@@ -366,3 +366,32 @@ resource "oci_devops_deploy_stage" "dependent" {
     }
   }
 }
+
+resource "oci_devops_trigger" "this" {
+  for_each = var.triggers
+
+  project_id     = var.project_id
+  repository_id  = try(each.value.repository_id, null)
+  display_name   = each.value.display_name
+  description    = coalesce(each.value.description, each.value.display_name)
+  trigger_source = each.value.trigger_source
+
+  actions {
+    build_pipeline_id = oci_devops_build_pipeline.this[each.value.build_pipeline_key].id
+    type              = "TRIGGER_BUILD_PIPELINE"
+
+    filter {
+      trigger_source = each.value.trigger_source
+      events         = each.value.events
+
+      include {
+        repository_name = try(each.value.repository_name, null)
+        head_ref        = try(each.value.head_ref, null)
+        base_ref        = try(each.value.base_ref, null)
+      }
+    }
+  }
+
+  defined_tags  = var.defined_tags
+  freeform_tags = var.freeform_tags
+}
