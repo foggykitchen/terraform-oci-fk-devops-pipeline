@@ -371,7 +371,8 @@ resource "oci_devops_trigger" "this" {
   for_each = var.triggers
 
   project_id     = var.project_id
-  repository_id  = try(each.value.repository_id, null)
+  connection_id  = contains(["BITBUCKET_CLOUD", "GITHUB", "GITLAB", "VBS"], each.value.trigger_source) ? try(each.value.connection_id, null) : null
+  repository_id  = each.value.trigger_source == "DEVOPS_CODE_REPOSITORY" ? try(each.value.repository_id, null) : null
   display_name   = each.value.display_name
   description    = coalesce(each.value.description, each.value.display_name)
   trigger_source = each.value.trigger_source

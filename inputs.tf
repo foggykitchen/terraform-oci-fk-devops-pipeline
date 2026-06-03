@@ -111,6 +111,7 @@ variable "triggers" {
     build_pipeline_key = string
     trigger_source     = optional(string, "DEVOPS_CODE_REPOSITORY")
     events             = optional(list(string), ["PUSH"])
+    connection_id      = optional(string)
     repository_id      = optional(string)
     repository_name    = optional(string)
     head_ref           = optional(string)
