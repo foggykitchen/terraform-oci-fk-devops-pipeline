@@ -291,26 +291,35 @@ resource "oci_devops_deploy_stage" "root" {
 resource "oci_devops_deploy_stage" "dependent" {
   for_each = local.deploy_dependent_stage_map
 
-  deploy_pipeline_id                       = oci_devops_deploy_pipeline.this[each.value.pipeline_key].id
-  deploy_stage_type                        = each.value.stage_type
-  display_name                             = each.value.display_name
-  description                              = coalesce(each.value.description, each.value.display_name)
-  oke_cluster_deploy_environment_id        = contains(["OKE_HELM_CHART_DEPLOYMENT", "OKE_DEPLOYMENT", "OKE_CANARY_DEPLOYMENT", "OKE_BLUE_GREEN_DEPLOYMENT"], each.value.stage_type) ? try(each.value.deploy_environment_id, null) : null
-  namespace                                = contains(["OKE_DEPLOYMENT", "OKE_HELM_CHART_DEPLOYMENT"], each.value.stage_type) ? try(each.value.namespace, null) : null
-  kubernetes_manifest_deploy_artifact_ids  = contains(["OKE_DEPLOYMENT", "OKE_CANARY_DEPLOYMENT", "OKE_BLUE_GREEN_DEPLOYMENT"], each.value.stage_type) ? try(each.value.kubernetes_manifest_deploy_artifact_ids, null) : null
-  helm_chart_deploy_artifact_id            = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.helm_chart_deploy_artifact_id, null) : null
-  release_name                             = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.release_name, null) : null
-  values_artifact_ids                      = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.values_artifact_ids, null) : null
-  are_hooks_enabled                        = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.are_hooks_enabled, null) : null
-  should_reuse_values                      = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.should_reuse_values, null) : null
-  should_not_wait                          = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.should_not_wait, null) : null
-  max_history                              = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.max_history, null) : null
-  timeout_in_seconds                       = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.timeout_in_seconds, null) : null
-  oke_canary_deploy_stage_id               = each.value.stage_type == "OKE_CANARY_TRAFFIC_SHIFT" ? coalesce(try(oci_devops_deploy_stage.root["${each.value.pipeline_key}:${each.value.oke_canary_deploy_stage_key}"].id, null), oci_devops_deploy_stage.dependent["${each.value.pipeline_key}:${each.value.oke_canary_deploy_stage_key}"].id) : null
-  oke_canary_traffic_shift_deploy_stage_id = each.value.stage_type == "OKE_CANARY_APPROVAL" ? coalesce(try(oci_devops_deploy_stage.root["${each.value.pipeline_key}:${each.value.oke_canary_traffic_shift_stage_key}"].id, null), oci_devops_deploy_stage.dependent["${each.value.pipeline_key}:${each.value.oke_canary_traffic_shift_stage_key}"].id) : null
-  oke_blue_green_deploy_stage_id           = each.value.stage_type == "OKE_BLUE_GREEN_TRAFFIC_SHIFT" ? coalesce(try(oci_devops_deploy_stage.root["${each.value.pipeline_key}:${each.value.oke_blue_green_deploy_stage_key}"].id, null), oci_devops_deploy_stage.dependent["${each.value.pipeline_key}:${each.value.oke_blue_green_deploy_stage_key}"].id) : null
-  purpose                                  = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.purpose, null) : null
-  deploy_artifact_id                       = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.deploy_artifact_id, null) : null
+  deploy_pipeline_id                      = oci_devops_deploy_pipeline.this[each.value.pipeline_key].id
+  deploy_stage_type                       = each.value.stage_type
+  display_name                            = each.value.display_name
+  description                             = coalesce(each.value.description, each.value.display_name)
+  oke_cluster_deploy_environment_id       = contains(["OKE_HELM_CHART_DEPLOYMENT", "OKE_DEPLOYMENT", "OKE_CANARY_DEPLOYMENT", "OKE_BLUE_GREEN_DEPLOYMENT"], each.value.stage_type) ? try(each.value.deploy_environment_id, null) : null
+  namespace                               = contains(["OKE_DEPLOYMENT", "OKE_HELM_CHART_DEPLOYMENT"], each.value.stage_type) ? try(each.value.namespace, null) : null
+  kubernetes_manifest_deploy_artifact_ids = contains(["OKE_DEPLOYMENT", "OKE_CANARY_DEPLOYMENT", "OKE_BLUE_GREEN_DEPLOYMENT"], each.value.stage_type) ? try(each.value.kubernetes_manifest_deploy_artifact_ids, null) : null
+  helm_chart_deploy_artifact_id           = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.helm_chart_deploy_artifact_id, null) : null
+  release_name                            = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.release_name, null) : null
+  values_artifact_ids                     = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.values_artifact_ids, null) : null
+  are_hooks_enabled                       = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.are_hooks_enabled, null) : null
+  should_reuse_values                     = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.should_reuse_values, null) : null
+  should_not_wait                         = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.should_not_wait, null) : null
+  max_history                             = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.max_history, null) : null
+  timeout_in_seconds                      = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.timeout_in_seconds, null) : null
+  oke_canary_deploy_stage_id = each.value.stage_type == "OKE_CANARY_TRAFFIC_SHIFT" ? try(
+    oci_devops_deploy_stage.root["${each.value.pipeline_key}:${each.value.oke_canary_deploy_stage_key}"].id,
+    try(oci_devops_deploy_stage.dependent["${each.value.pipeline_key}:${each.value.oke_canary_deploy_stage_key}"].id, null)
+  ) : null
+  oke_canary_traffic_shift_deploy_stage_id = each.value.stage_type == "OKE_CANARY_APPROVAL" ? try(
+    oci_devops_deploy_stage.root["${each.value.pipeline_key}:${each.value.oke_canary_traffic_shift_stage_key}"].id,
+    try(oci_devops_deploy_stage.dependent["${each.value.pipeline_key}:${each.value.oke_canary_traffic_shift_stage_key}"].id, null)
+  ) : null
+  oke_blue_green_deploy_stage_id = each.value.stage_type == "OKE_BLUE_GREEN_TRAFFIC_SHIFT" ? try(
+    oci_devops_deploy_stage.root["${each.value.pipeline_key}:${each.value.oke_blue_green_deploy_stage_key}"].id,
+    try(oci_devops_deploy_stage.dependent["${each.value.pipeline_key}:${each.value.oke_blue_green_deploy_stage_key}"].id, null)
+  ) : null
+  purpose            = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.purpose, null) : null
+  deploy_artifact_id = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.deploy_artifact_id, null) : null
 
   deploy_stage_predecessor_collection {
     dynamic "items" {

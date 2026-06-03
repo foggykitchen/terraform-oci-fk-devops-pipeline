@@ -29,7 +29,7 @@ It focuses on the stage orchestration patterns used in the original OCI DevOps t
 - trigger deploy pipeline
 - OKE Helm deployment
 - OKE deployment
-- canary deployment
+- OKE canary deployment
 - blue-green deployment
 - manual approval and traffic shift stages
 
@@ -134,6 +134,15 @@ module "fk_devops_pipeline" {
 | `triggers` | `map(object)` | no | Trigger definitions that start build pipelines managed by this module |
 
 The module expects all referenced repositories, artifacts, and environments to already exist.
+
+For OKE canary deployment pipelines, the module supports the OCI DevOps stage chain:
+
+1. `OKE_CANARY_DEPLOYMENT`
+2. `OKE_CANARY_TRAFFIC_SHIFT`
+3. `OKE_CANARY_APPROVAL`
+4. `OKE_DEPLOYMENT` for production release
+
+The canary deployment stage uses `canary_strategy` with an ingress resource and canary namespace. The traffic shift and approval stages reference upstream stages by logical stage keys, allowing the module to resolve the generated OCI DevOps stage OCIDs inside the same pipeline graph.
 
 ---
 
