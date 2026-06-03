@@ -96,9 +96,10 @@ resource "oci_devops_build_pipeline_stage" "root" {
         for_each = build_source_collection.value
         content {
           connection_type = items.value.connection_type
+          connection_id   = items.value.connection_type == "DEVOPS_CODE_REPOSITORY" ? null : try(items.value.connection_id, null)
           branch          = items.value.branch
           name            = items.value.name
-          repository_id   = items.value.repository_id
+          repository_id   = items.value.connection_type == "DEVOPS_CODE_REPOSITORY" ? try(items.value.repository_id, null) : null
           repository_url  = items.value.repository_url
         }
       }
@@ -156,9 +157,10 @@ resource "oci_devops_build_pipeline_stage" "dependent" {
         for_each = build_source_collection.value
         content {
           connection_type = items.value.connection_type
+          connection_id   = items.value.connection_type == "DEVOPS_CODE_REPOSITORY" ? null : try(items.value.connection_id, null)
           branch          = items.value.branch
           name            = items.value.name
-          repository_id   = items.value.repository_id
+          repository_id   = items.value.connection_type == "DEVOPS_CODE_REPOSITORY" ? try(items.value.repository_id, null) : null
           repository_url  = items.value.repository_url
         }
       }

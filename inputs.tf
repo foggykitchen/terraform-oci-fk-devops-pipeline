@@ -26,9 +26,10 @@ variable "build_pipelines" {
       wait_type                          = optional(string)
       build_sources = optional(list(object({
         connection_type = optional(string, "DEVOPS_CODE_REPOSITORY")
+        connection_id   = optional(string)
         branch          = optional(string, "main")
         name            = string
-        repository_id   = string
+        repository_id   = optional(string)
         repository_url  = string
       })), [])
       deliver_artifacts = optional(list(object({
