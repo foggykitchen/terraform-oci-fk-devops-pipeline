@@ -72,6 +72,9 @@ variable "deploy_pipelines" {
       timeout_in_seconds                      = optional(number)
       purpose                                 = optional(string)
       deploy_artifact_id                      = optional(string)
+      function_deploy_environment_id          = optional(string)
+      is_async                                = optional(bool)
+      is_validation_enabled                   = optional(bool)
       canary_strategy = optional(object({
         ingress_name  = string
         namespace     = string

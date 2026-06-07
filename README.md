@@ -31,6 +31,7 @@ It focuses on the stage orchestration patterns used in the original OCI DevOps t
 - OKE deployment
 - OKE canary deployment
 - blue-green deployment
+- invoke function validation stages
 - manual approval and traffic shift stages
 
 ---
@@ -138,11 +139,27 @@ The module expects all referenced repositories, artifacts, and environments to a
 For OKE canary deployment pipelines, the module supports the OCI DevOps stage chain:
 
 1. `OKE_CANARY_DEPLOYMENT`
-2. `OKE_CANARY_TRAFFIC_SHIFT`
-3. `OKE_CANARY_APPROVAL`
-4. `OKE_DEPLOYMENT` for production release
+2. optional `INVOKE_FUNCTION` validation
+3. `OKE_CANARY_TRAFFIC_SHIFT`
+4. `OKE_CANARY_APPROVAL`
+5. `OKE_DEPLOYMENT` for production release
 
 The canary deployment stage uses `canary_strategy` with an ingress resource and canary namespace. The traffic shift and approval stages reference upstream stages by logical stage keys, allowing the module to resolve the generated OCI DevOps stage OCIDs inside the same pipeline graph. Deploy stage dependencies are materialized across multiple resource levels so chained stages can depend on earlier generated stages without creating a Terraform graph cycle.
+
+For `INVOKE_FUNCTION` stages, pass `function_deploy_environment_id`, `is_async`, and `is_validation_enabled`. The function environment is expected to be created outside this module, usually by `terraform-oci-fk-devops` as a deploy environment of type `FUNCTION`. When `deploy_artifact_id` is provided, OCI DevOps includes that artifact in the function invocation body during stage execution.
+
+```hcl
+{
+  key                            = "validate_canary"
+  stage_type                     = "INVOKE_FUNCTION"
+  display_name                   = "validate-canary"
+  predecessor_keys               = ["canary_deploy"]
+  function_deploy_environment_id = var.function_deploy_environment_id
+  is_async                       = false
+  is_validation_enabled          = true
+  deploy_artifact_id             = var.validation_payload_artifact_id
+}
+```
 
 ---
 
