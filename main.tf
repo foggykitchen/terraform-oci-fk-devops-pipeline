@@ -357,7 +357,11 @@ resource "oci_devops_deploy_stage" "root" {
   oke_blue_green_deploy_stage_id           = null
   purpose                                  = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.purpose, null) : null
   deploy_artifact_id                       = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.deploy_artifact_id, null) : null
-  function_deploy_environment_id           = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.function_deploy_environment_id, null) : null
+  function_deploy_environment_id           = contains(["INVOKE_FUNCTION", "DEPLOY_FUNCTION"], each.value.stage_type) ? try(each.value.function_deploy_environment_id, null) : null
+  docker_image_deploy_artifact_id          = each.value.stage_type == "DEPLOY_FUNCTION" ? try(each.value.docker_image_deploy_artifact_id, null) : null
+  config                                   = each.value.stage_type == "DEPLOY_FUNCTION" ? try(each.value.config, null) : null
+  max_memory_in_mbs                        = each.value.stage_type == "DEPLOY_FUNCTION" ? try(each.value.max_memory_in_mbs, null) : null
+  function_timeout_in_seconds              = each.value.stage_type == "DEPLOY_FUNCTION" ? try(each.value.function_timeout_in_seconds, null) : null
   is_async                                 = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.is_async, null) : null
   is_validation_enabled                    = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.is_validation_enabled, null) : null
 
@@ -441,9 +445,16 @@ resource "oci_devops_deploy_stage" "dependent" {
   ) : null
   purpose                        = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.purpose, null) : null
   deploy_artifact_id             = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.deploy_artifact_id, null) : null
-  function_deploy_environment_id = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.function_deploy_environment_id, null) : null
-  is_async                       = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.is_async, null) : null
-  is_validation_enabled          = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.is_validation_enabled, null) : null
+  function_deploy_environment_id = contains(["INVOKE_FUNCTION", "DEPLOY_FUNCTION"], each.value.stage_type) ? try(each.value.function_deploy_environment_id, null) : null
+  docker_image_deploy_artifact_id = each.value.stage_type == "DEPLOY_FUNCTION" ? try(
+    each.value.docker_image_deploy_artifact_id,
+    null
+  ) : null
+  config                      = each.value.stage_type == "DEPLOY_FUNCTION" ? try(each.value.config, null) : null
+  max_memory_in_mbs           = each.value.stage_type == "DEPLOY_FUNCTION" ? try(each.value.max_memory_in_mbs, null) : null
+  function_timeout_in_seconds = each.value.stage_type == "DEPLOY_FUNCTION" ? try(each.value.function_timeout_in_seconds, null) : null
+  is_async                    = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.is_async, null) : null
+  is_validation_enabled       = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.is_validation_enabled, null) : null
 
   deploy_stage_predecessor_collection {
     dynamic "items" {
@@ -531,9 +542,16 @@ resource "oci_devops_deploy_stage" "second_dependent" {
   ) : null
   purpose                        = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.purpose, null) : null
   deploy_artifact_id             = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.deploy_artifact_id, null) : null
-  function_deploy_environment_id = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.function_deploy_environment_id, null) : null
-  is_async                       = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.is_async, null) : null
-  is_validation_enabled          = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.is_validation_enabled, null) : null
+  function_deploy_environment_id = contains(["INVOKE_FUNCTION", "DEPLOY_FUNCTION"], each.value.stage_type) ? try(each.value.function_deploy_environment_id, null) : null
+  docker_image_deploy_artifact_id = each.value.stage_type == "DEPLOY_FUNCTION" ? try(
+    each.value.docker_image_deploy_artifact_id,
+    null
+  ) : null
+  config                      = each.value.stage_type == "DEPLOY_FUNCTION" ? try(each.value.config, null) : null
+  max_memory_in_mbs           = each.value.stage_type == "DEPLOY_FUNCTION" ? try(each.value.max_memory_in_mbs, null) : null
+  function_timeout_in_seconds = each.value.stage_type == "DEPLOY_FUNCTION" ? try(each.value.function_timeout_in_seconds, null) : null
+  is_async                    = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.is_async, null) : null
+  is_validation_enabled       = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.is_validation_enabled, null) : null
 
   deploy_stage_predecessor_collection {
     dynamic "items" {
@@ -633,9 +651,16 @@ resource "oci_devops_deploy_stage" "third_dependent" {
   ) : null
   purpose                        = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.purpose, null) : null
   deploy_artifact_id             = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.deploy_artifact_id, null) : null
-  function_deploy_environment_id = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.function_deploy_environment_id, null) : null
-  is_async                       = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.is_async, null) : null
-  is_validation_enabled          = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.is_validation_enabled, null) : null
+  function_deploy_environment_id = contains(["INVOKE_FUNCTION", "DEPLOY_FUNCTION"], each.value.stage_type) ? try(each.value.function_deploy_environment_id, null) : null
+  docker_image_deploy_artifact_id = each.value.stage_type == "DEPLOY_FUNCTION" ? try(
+    each.value.docker_image_deploy_artifact_id,
+    null
+  ) : null
+  config                      = each.value.stage_type == "DEPLOY_FUNCTION" ? try(each.value.config, null) : null
+  max_memory_in_mbs           = each.value.stage_type == "DEPLOY_FUNCTION" ? try(each.value.max_memory_in_mbs, null) : null
+  function_timeout_in_seconds = each.value.stage_type == "DEPLOY_FUNCTION" ? try(each.value.function_timeout_in_seconds, null) : null
+  is_async                    = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.is_async, null) : null
+  is_validation_enabled       = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.is_validation_enabled, null) : null
 
   deploy_stage_predecessor_collection {
     dynamic "items" {
@@ -749,9 +774,16 @@ resource "oci_devops_deploy_stage" "fourth_dependent" {
   ) : null
   purpose                        = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.purpose, null) : null
   deploy_artifact_id             = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.deploy_artifact_id, null) : null
-  function_deploy_environment_id = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.function_deploy_environment_id, null) : null
-  is_async                       = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.is_async, null) : null
-  is_validation_enabled          = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.is_validation_enabled, null) : null
+  function_deploy_environment_id = contains(["INVOKE_FUNCTION", "DEPLOY_FUNCTION"], each.value.stage_type) ? try(each.value.function_deploy_environment_id, null) : null
+  docker_image_deploy_artifact_id = each.value.stage_type == "DEPLOY_FUNCTION" ? try(
+    each.value.docker_image_deploy_artifact_id,
+    null
+  ) : null
+  config                      = each.value.stage_type == "DEPLOY_FUNCTION" ? try(each.value.config, null) : null
+  max_memory_in_mbs           = each.value.stage_type == "DEPLOY_FUNCTION" ? try(each.value.max_memory_in_mbs, null) : null
+  function_timeout_in_seconds = each.value.stage_type == "DEPLOY_FUNCTION" ? try(each.value.function_timeout_in_seconds, null) : null
+  is_async                    = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.is_async, null) : null
+  is_validation_enabled       = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.is_validation_enabled, null) : null
 
   deploy_stage_predecessor_collection {
     dynamic "items" {

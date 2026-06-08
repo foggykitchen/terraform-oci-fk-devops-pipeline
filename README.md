@@ -31,6 +31,7 @@ It focuses on the stage orchestration patterns used in the original OCI DevOps t
 - OKE deployment
 - OKE canary deployment
 - blue-green deployment
+- OCI Functions deployment
 - invoke function validation stages
 - manual approval and traffic shift stages
 
@@ -160,6 +161,23 @@ For `INVOKE_FUNCTION` stages, pass `function_deploy_environment_id`, `is_async`,
   is_async                       = false
   is_validation_enabled          = true
   deploy_artifact_id             = var.validation_payload_artifact_id
+}
+```
+
+For OCI Functions deployment pipelines, use a `DEPLOY_FUNCTION` stage. The function deploy environment is expected to come from `terraform-oci-fk-devops` as a deploy environment of type `FUNCTION`, while the Docker image artifact is expected to be created by the DevOps resource module and delivered by the build pipeline.
+
+```hcl
+{
+  key                             = "deploy_function"
+  stage_type                      = "DEPLOY_FUNCTION"
+  display_name                    = "deploy-function"
+  function_deploy_environment_id  = var.function_deploy_environment_id
+  docker_image_deploy_artifact_id = var.function_image_artifact_id
+  max_memory_in_mbs               = 256
+  function_timeout_in_seconds     = 120
+  config = {
+    RELEASE = "devops"
+  }
 }
 ```
 

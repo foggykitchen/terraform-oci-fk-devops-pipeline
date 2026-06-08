@@ -74,6 +74,10 @@ variable "deploy_pipelines" {
       purpose                                 = optional(string)
       deploy_artifact_id                      = optional(string)
       function_deploy_environment_id          = optional(string)
+      docker_image_deploy_artifact_id         = optional(string)
+      config                                  = optional(map(string))
+      max_memory_in_mbs                       = optional(number)
+      function_timeout_in_seconds             = optional(number)
       is_async                                = optional(bool)
       is_validation_enabled                   = optional(bool)
       canary_strategy = optional(object({
