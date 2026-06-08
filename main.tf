@@ -112,8 +112,11 @@ resource "oci_devops_build_pipeline_stage" "root" {
   build_spec_file                    = each.value.stage_type == "BUILD" ? try(each.value.build_spec_file, null) : null
   image                              = each.value.stage_type == "BUILD" ? try(each.value.image, null) : null
   stage_execution_timeout_in_seconds = each.value.stage_type == "BUILD" ? try(each.value.stage_execution_timeout_in_seconds, null) : null
-  deploy_pipeline_id                 = each.value.stage_type == "TRIGGER_DEPLOYMENT_PIPELINE" ? try(each.value.deploy_pipeline_id, null) : null
-  is_pass_all_parameters_enabled     = each.value.stage_type == "TRIGGER_DEPLOYMENT_PIPELINE" ? try(each.value.is_pass_all_parameters_enabled, false) : null
+  deploy_pipeline_id = each.value.stage_type == "TRIGGER_DEPLOYMENT_PIPELINE" ? try(coalesce(
+    try(each.value.deploy_pipeline_id, null),
+    try(oci_devops_deploy_pipeline.this[each.value.deploy_pipeline_key].id, null)
+  ), null) : null
+  is_pass_all_parameters_enabled = each.value.stage_type == "TRIGGER_DEPLOYMENT_PIPELINE" ? try(each.value.is_pass_all_parameters_enabled, false) : null
 
   build_pipeline_stage_predecessor_collection {
     items {
@@ -170,8 +173,11 @@ resource "oci_devops_build_pipeline_stage" "dependent" {
   build_spec_file                    = each.value.stage_type == "BUILD" ? try(each.value.build_spec_file, null) : null
   image                              = each.value.stage_type == "BUILD" ? try(each.value.image, null) : null
   stage_execution_timeout_in_seconds = each.value.stage_type == "BUILD" ? try(each.value.stage_execution_timeout_in_seconds, null) : null
-  deploy_pipeline_id                 = each.value.stage_type == "TRIGGER_DEPLOYMENT_PIPELINE" ? try(each.value.deploy_pipeline_id, null) : null
-  is_pass_all_parameters_enabled     = each.value.stage_type == "TRIGGER_DEPLOYMENT_PIPELINE" ? try(each.value.is_pass_all_parameters_enabled, false) : null
+  deploy_pipeline_id = each.value.stage_type == "TRIGGER_DEPLOYMENT_PIPELINE" ? try(coalesce(
+    try(each.value.deploy_pipeline_id, null),
+    try(oci_devops_deploy_pipeline.this[each.value.deploy_pipeline_key].id, null)
+  ), null) : null
+  is_pass_all_parameters_enabled = each.value.stage_type == "TRIGGER_DEPLOYMENT_PIPELINE" ? try(each.value.is_pass_all_parameters_enabled, false) : null
 
   build_pipeline_stage_predecessor_collection {
     dynamic "items" {

@@ -136,6 +136,8 @@ module "fk_devops_pipeline" {
 
 The module expects all referenced repositories, artifacts, and environments to already exist.
 
+For `TRIGGER_DEPLOYMENT_PIPELINE` build stages, pass either `deploy_pipeline_id` for an externally managed deployment pipeline or `deploy_pipeline_key` when the target deployment pipeline is created by the same module call.
+
 For OKE canary deployment pipelines, the module supports the OCI DevOps stage chain:
 
 1. `OKE_CANARY_DEPLOYMENT`

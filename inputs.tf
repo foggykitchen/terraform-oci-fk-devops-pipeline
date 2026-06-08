@@ -37,6 +37,7 @@ variable "build_pipelines" {
         artifact_name = string
       })), [])
       deploy_pipeline_id             = optional(string)
+      deploy_pipeline_key            = optional(string)
       is_pass_all_parameters_enabled = optional(bool, false)
     }))
   }))
