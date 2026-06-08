@@ -17,9 +17,25 @@ locals {
     if length(stage.predecessor_keys) == 0
   }
 
-  build_dependent_stage_map = {
+  build_dependent_candidate_stage_map = {
     for key, stage in local.build_stage_map : key => stage
     if length(stage.predecessor_keys) > 0
+  }
+
+  build_dependent_stage_map = {
+    for key, stage in local.build_dependent_candidate_stage_map : key => stage
+    if alltrue([
+      for predecessor_key in stage.predecessor_keys :
+      contains(keys(local.build_root_stage_map), "${stage.pipeline_key}:${predecessor_key}")
+    ])
+  }
+
+  build_second_dependent_stage_map = {
+    for key, stage in local.build_dependent_candidate_stage_map : key => stage
+    if !contains(keys(local.build_dependent_stage_map), key) && alltrue([
+      for predecessor_key in stage.predecessor_keys :
+      contains(concat(keys(local.build_root_stage_map), keys(local.build_dependent_stage_map)), "${stage.pipeline_key}:${predecessor_key}")
+    ])
   }
 
   deploy_stage_items = flatten([
@@ -184,6 +200,73 @@ resource "oci_devops_build_pipeline_stage" "dependent" {
       for_each = each.value.predecessor_keys
       content {
         id = oci_devops_build_pipeline_stage.root["${each.value.pipeline_key}:${items.value}"].id
+      }
+    }
+  }
+
+  dynamic "build_source_collection" {
+    for_each = each.value.stage_type == "BUILD" && length(try(each.value.build_sources, [])) > 0 ? [each.value.build_sources] : []
+    content {
+      dynamic "items" {
+        for_each = build_source_collection.value
+        content {
+          connection_type = items.value.connection_type
+          connection_id   = items.value.connection_type == "DEVOPS_CODE_REPOSITORY" ? null : try(items.value.connection_id, null)
+          branch          = items.value.branch
+          name            = items.value.name
+          repository_id   = items.value.connection_type == "DEVOPS_CODE_REPOSITORY" ? try(items.value.repository_id, null) : null
+          repository_url  = items.value.repository_url
+        }
+      }
+    }
+  }
+
+  dynamic "deliver_artifact_collection" {
+    for_each = each.value.stage_type == "DELIVER_ARTIFACT" && length(try(each.value.deliver_artifacts, [])) > 0 ? [each.value.deliver_artifacts] : []
+    content {
+      dynamic "items" {
+        for_each = deliver_artifact_collection.value
+        content {
+          artifact_id   = items.value.artifact_id
+          artifact_name = items.value.artifact_name
+        }
+      }
+    }
+  }
+
+  dynamic "wait_criteria" {
+    for_each = each.value.stage_type == "BUILD" && try(each.value.wait_duration, null) != null && try(each.value.wait_type, null) != null ? [1] : []
+    content {
+      wait_duration = each.value.wait_duration
+      wait_type     = each.value.wait_type
+    }
+  }
+}
+
+resource "oci_devops_build_pipeline_stage" "second_dependent" {
+  for_each = local.build_second_dependent_stage_map
+
+  build_pipeline_id                  = oci_devops_build_pipeline.this[each.value.pipeline_key].id
+  build_pipeline_stage_type          = each.value.stage_type
+  display_name                       = each.value.display_name
+  description                        = coalesce(each.value.description, each.value.display_name)
+  build_spec_file                    = each.value.stage_type == "BUILD" ? try(each.value.build_spec_file, null) : null
+  image                              = each.value.stage_type == "BUILD" ? try(each.value.image, null) : null
+  stage_execution_timeout_in_seconds = each.value.stage_type == "BUILD" ? try(each.value.stage_execution_timeout_in_seconds, null) : null
+  deploy_pipeline_id = each.value.stage_type == "TRIGGER_DEPLOYMENT_PIPELINE" ? try(coalesce(
+    try(each.value.deploy_pipeline_id, null),
+    try(oci_devops_deploy_pipeline.this[each.value.deploy_pipeline_key].id, null)
+  ), null) : null
+  is_pass_all_parameters_enabled = each.value.stage_type == "TRIGGER_DEPLOYMENT_PIPELINE" ? try(each.value.is_pass_all_parameters_enabled, false) : null
+
+  build_pipeline_stage_predecessor_collection {
+    dynamic "items" {
+      for_each = each.value.predecessor_keys
+      content {
+        id = try(
+          oci_devops_build_pipeline_stage.root["${each.value.pipeline_key}:${items.value}"].id,
+          oci_devops_build_pipeline_stage.dependent["${each.value.pipeline_key}:${items.value}"].id
+        )
       }
     }
   }
