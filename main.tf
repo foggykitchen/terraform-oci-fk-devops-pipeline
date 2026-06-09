@@ -337,33 +337,36 @@ resource "oci_devops_deploy_pipeline" "this" {
 resource "oci_devops_deploy_stage" "root" {
   for_each = local.deploy_root_stage_map
 
-  deploy_pipeline_id                       = oci_devops_deploy_pipeline.this[each.value.pipeline_key].id
-  deploy_stage_type                        = each.value.stage_type
-  display_name                             = each.value.display_name
-  description                              = coalesce(each.value.description, each.value.display_name)
-  oke_cluster_deploy_environment_id        = contains(["OKE_HELM_CHART_DEPLOYMENT", "OKE_DEPLOYMENT", "OKE_CANARY_DEPLOYMENT", "OKE_BLUE_GREEN_DEPLOYMENT"], each.value.stage_type) ? try(each.value.deploy_environment_id, null) : null
-  namespace                                = contains(["OKE_DEPLOYMENT", "OKE_HELM_CHART_DEPLOYMENT"], each.value.stage_type) ? try(each.value.namespace, null) : null
-  kubernetes_manifest_deploy_artifact_ids  = contains(["OKE_DEPLOYMENT", "OKE_CANARY_DEPLOYMENT", "OKE_BLUE_GREEN_DEPLOYMENT"], each.value.stage_type) ? try(each.value.kubernetes_manifest_deploy_artifact_ids, null) : null
-  helm_chart_deploy_artifact_id            = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.helm_chart_deploy_artifact_id, null) : null
-  release_name                             = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.release_name, null) : null
-  values_artifact_ids                      = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.values_artifact_ids, null) : null
-  are_hooks_enabled                        = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.are_hooks_enabled, null) : null
-  should_reuse_values                      = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.should_reuse_values, null) : null
-  should_not_wait                          = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.should_not_wait, null) : null
-  max_history                              = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.max_history, null) : null
-  timeout_in_seconds                       = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.timeout_in_seconds, null) : null
-  oke_canary_deploy_stage_id               = null
-  oke_canary_traffic_shift_deploy_stage_id = null
-  oke_blue_green_deploy_stage_id           = null
-  purpose                                  = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.purpose, null) : null
-  deploy_artifact_id                       = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.deploy_artifact_id, null) : null
-  function_deploy_environment_id           = contains(["INVOKE_FUNCTION", "DEPLOY_FUNCTION"], each.value.stage_type) ? try(each.value.function_deploy_environment_id, null) : null
-  docker_image_deploy_artifact_id          = each.value.stage_type == "DEPLOY_FUNCTION" ? try(each.value.docker_image_deploy_artifact_id, null) : null
-  config                                   = each.value.stage_type == "DEPLOY_FUNCTION" ? try(each.value.config, null) : null
-  max_memory_in_mbs                        = each.value.stage_type == "DEPLOY_FUNCTION" ? try(each.value.max_memory_in_mbs, null) : null
-  function_timeout_in_seconds              = each.value.stage_type == "DEPLOY_FUNCTION" ? try(each.value.function_timeout_in_seconds, null) : null
-  is_async                                 = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.is_async, null) : null
-  is_validation_enabled                    = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.is_validation_enabled, null) : null
+  deploy_pipeline_id                           = oci_devops_deploy_pipeline.this[each.value.pipeline_key].id
+  deploy_stage_type                            = each.value.stage_type
+  display_name                                 = each.value.display_name
+  description                                  = coalesce(each.value.description, each.value.display_name)
+  oke_cluster_deploy_environment_id            = contains(["OKE_HELM_CHART_DEPLOYMENT", "OKE_DEPLOYMENT", "OKE_CANARY_DEPLOYMENT", "OKE_BLUE_GREEN_DEPLOYMENT"], each.value.stage_type) ? try(each.value.deploy_environment_id, null) : null
+  namespace                                    = contains(["OKE_DEPLOYMENT", "OKE_HELM_CHART_DEPLOYMENT"], each.value.stage_type) ? try(each.value.namespace, null) : null
+  kubernetes_manifest_deploy_artifact_ids      = contains(["OKE_DEPLOYMENT", "OKE_CANARY_DEPLOYMENT", "OKE_BLUE_GREEN_DEPLOYMENT"], each.value.stage_type) ? try(each.value.kubernetes_manifest_deploy_artifact_ids, null) : null
+  compute_instance_group_deploy_environment_id = each.value.stage_type == "COMPUTE_INSTANCE_GROUP_ROLLING_DEPLOYMENT" ? try(each.value.compute_instance_group_deploy_environment_id, try(each.value.deploy_environment_id, null)) : null
+  deploy_artifact_ids                          = each.value.stage_type == "COMPUTE_INSTANCE_GROUP_ROLLING_DEPLOYMENT" ? try(each.value.deploy_artifact_ids, null) : null
+  deployment_spec_deploy_artifact_id           = each.value.stage_type == "COMPUTE_INSTANCE_GROUP_ROLLING_DEPLOYMENT" ? try(each.value.deployment_spec_deploy_artifact_id, null) : null
+  helm_chart_deploy_artifact_id                = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.helm_chart_deploy_artifact_id, null) : null
+  release_name                                 = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.release_name, null) : null
+  values_artifact_ids                          = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.values_artifact_ids, null) : null
+  are_hooks_enabled                            = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.are_hooks_enabled, null) : null
+  should_reuse_values                          = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.should_reuse_values, null) : null
+  should_not_wait                              = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.should_not_wait, null) : null
+  max_history                                  = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.max_history, null) : null
+  timeout_in_seconds                           = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.timeout_in_seconds, null) : null
+  oke_canary_deploy_stage_id                   = null
+  oke_canary_traffic_shift_deploy_stage_id     = null
+  oke_blue_green_deploy_stage_id               = null
+  purpose                                      = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.purpose, null) : null
+  deploy_artifact_id                           = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.deploy_artifact_id, null) : null
+  function_deploy_environment_id               = contains(["INVOKE_FUNCTION", "DEPLOY_FUNCTION"], each.value.stage_type) ? try(each.value.function_deploy_environment_id, null) : null
+  docker_image_deploy_artifact_id              = each.value.stage_type == "DEPLOY_FUNCTION" ? try(each.value.docker_image_deploy_artifact_id, null) : null
+  config                                       = each.value.stage_type == "DEPLOY_FUNCTION" ? try(each.value.config, null) : null
+  max_memory_in_mbs                            = each.value.stage_type == "DEPLOY_FUNCTION" ? try(each.value.max_memory_in_mbs, null) : null
+  function_timeout_in_seconds                  = each.value.stage_type == "DEPLOY_FUNCTION" ? try(each.value.function_timeout_in_seconds, null) : null
+  is_async                                     = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.is_async, null) : null
+  is_validation_enabled                        = each.value.stage_type == "INVOKE_FUNCTION" ? try(each.value.is_validation_enabled, null) : null
 
   deploy_stage_predecessor_collection {
     items {
@@ -405,6 +408,15 @@ resource "oci_devops_deploy_stage" "root" {
     }
   }
 
+  dynamic "failure_policy" {
+    for_each = each.value.stage_type == "COMPUTE_INSTANCE_GROUP_ROLLING_DEPLOYMENT" && try(each.value.failure_policy, null) != null ? [each.value.failure_policy] : []
+    content {
+      failure_count      = try(failure_policy.value.failure_count, null)
+      failure_percentage = try(failure_policy.value.failure_percentage, null)
+      policy_type        = failure_policy.value.policy_type
+    }
+  }
+
   dynamic "blue_green_strategy" {
     for_each = each.value.stage_type == "OKE_BLUE_GREEN_DEPLOYMENT" && try(each.value.blue_green_strategy, null) != null ? [each.value.blue_green_strategy] : []
     content {
@@ -419,21 +431,24 @@ resource "oci_devops_deploy_stage" "root" {
 resource "oci_devops_deploy_stage" "dependent" {
   for_each = local.deploy_dependent_stage_map
 
-  deploy_pipeline_id                      = oci_devops_deploy_pipeline.this[each.value.pipeline_key].id
-  deploy_stage_type                       = each.value.stage_type
-  display_name                            = each.value.display_name
-  description                             = coalesce(each.value.description, each.value.display_name)
-  oke_cluster_deploy_environment_id       = contains(["OKE_HELM_CHART_DEPLOYMENT", "OKE_DEPLOYMENT", "OKE_CANARY_DEPLOYMENT", "OKE_BLUE_GREEN_DEPLOYMENT"], each.value.stage_type) ? try(each.value.deploy_environment_id, null) : null
-  namespace                               = contains(["OKE_DEPLOYMENT", "OKE_HELM_CHART_DEPLOYMENT"], each.value.stage_type) ? try(each.value.namespace, null) : null
-  kubernetes_manifest_deploy_artifact_ids = contains(["OKE_DEPLOYMENT", "OKE_CANARY_DEPLOYMENT", "OKE_BLUE_GREEN_DEPLOYMENT"], each.value.stage_type) ? try(each.value.kubernetes_manifest_deploy_artifact_ids, null) : null
-  helm_chart_deploy_artifact_id           = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.helm_chart_deploy_artifact_id, null) : null
-  release_name                            = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.release_name, null) : null
-  values_artifact_ids                     = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.values_artifact_ids, null) : null
-  are_hooks_enabled                       = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.are_hooks_enabled, null) : null
-  should_reuse_values                     = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.should_reuse_values, null) : null
-  should_not_wait                         = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.should_not_wait, null) : null
-  max_history                             = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.max_history, null) : null
-  timeout_in_seconds                      = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.timeout_in_seconds, null) : null
+  deploy_pipeline_id                           = oci_devops_deploy_pipeline.this[each.value.pipeline_key].id
+  deploy_stage_type                            = each.value.stage_type
+  display_name                                 = each.value.display_name
+  description                                  = coalesce(each.value.description, each.value.display_name)
+  oke_cluster_deploy_environment_id            = contains(["OKE_HELM_CHART_DEPLOYMENT", "OKE_DEPLOYMENT", "OKE_CANARY_DEPLOYMENT", "OKE_BLUE_GREEN_DEPLOYMENT"], each.value.stage_type) ? try(each.value.deploy_environment_id, null) : null
+  namespace                                    = contains(["OKE_DEPLOYMENT", "OKE_HELM_CHART_DEPLOYMENT"], each.value.stage_type) ? try(each.value.namespace, null) : null
+  kubernetes_manifest_deploy_artifact_ids      = contains(["OKE_DEPLOYMENT", "OKE_CANARY_DEPLOYMENT", "OKE_BLUE_GREEN_DEPLOYMENT"], each.value.stage_type) ? try(each.value.kubernetes_manifest_deploy_artifact_ids, null) : null
+  compute_instance_group_deploy_environment_id = each.value.stage_type == "COMPUTE_INSTANCE_GROUP_ROLLING_DEPLOYMENT" ? try(each.value.compute_instance_group_deploy_environment_id, try(each.value.deploy_environment_id, null)) : null
+  deploy_artifact_ids                          = each.value.stage_type == "COMPUTE_INSTANCE_GROUP_ROLLING_DEPLOYMENT" ? try(each.value.deploy_artifact_ids, null) : null
+  deployment_spec_deploy_artifact_id           = each.value.stage_type == "COMPUTE_INSTANCE_GROUP_ROLLING_DEPLOYMENT" ? try(each.value.deployment_spec_deploy_artifact_id, null) : null
+  helm_chart_deploy_artifact_id                = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.helm_chart_deploy_artifact_id, null) : null
+  release_name                                 = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.release_name, null) : null
+  values_artifact_ids                          = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.values_artifact_ids, null) : null
+  are_hooks_enabled                            = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.are_hooks_enabled, null) : null
+  should_reuse_values                          = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.should_reuse_values, null) : null
+  should_not_wait                              = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.should_not_wait, null) : null
+  max_history                                  = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.max_history, null) : null
+  timeout_in_seconds                           = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.timeout_in_seconds, null) : null
   oke_canary_deploy_stage_id = each.value.stage_type == "OKE_CANARY_TRAFFIC_SHIFT" ? try(
     oci_devops_deploy_stage.root["${each.value.pipeline_key}:${each.value.oke_canary_deploy_stage_key}"].id,
     null
@@ -499,6 +514,15 @@ resource "oci_devops_deploy_stage" "dependent" {
     }
   }
 
+  dynamic "failure_policy" {
+    for_each = each.value.stage_type == "COMPUTE_INSTANCE_GROUP_ROLLING_DEPLOYMENT" && try(each.value.failure_policy, null) != null ? [each.value.failure_policy] : []
+    content {
+      failure_count      = try(failure_policy.value.failure_count, null)
+      failure_percentage = try(failure_policy.value.failure_percentage, null)
+      policy_type        = failure_policy.value.policy_type
+    }
+  }
+
   dynamic "blue_green_strategy" {
     for_each = each.value.stage_type == "OKE_BLUE_GREEN_DEPLOYMENT" && try(each.value.blue_green_strategy, null) != null ? [each.value.blue_green_strategy] : []
     content {
@@ -513,21 +537,24 @@ resource "oci_devops_deploy_stage" "dependent" {
 resource "oci_devops_deploy_stage" "second_dependent" {
   for_each = local.deploy_second_dependent_stage_map
 
-  deploy_pipeline_id                      = oci_devops_deploy_pipeline.this[each.value.pipeline_key].id
-  deploy_stage_type                       = each.value.stage_type
-  display_name                            = each.value.display_name
-  description                             = coalesce(each.value.description, each.value.display_name)
-  oke_cluster_deploy_environment_id       = contains(["OKE_HELM_CHART_DEPLOYMENT", "OKE_DEPLOYMENT", "OKE_CANARY_DEPLOYMENT", "OKE_BLUE_GREEN_DEPLOYMENT"], each.value.stage_type) ? try(each.value.deploy_environment_id, null) : null
-  namespace                               = contains(["OKE_DEPLOYMENT", "OKE_HELM_CHART_DEPLOYMENT"], each.value.stage_type) ? try(each.value.namespace, null) : null
-  kubernetes_manifest_deploy_artifact_ids = contains(["OKE_DEPLOYMENT", "OKE_CANARY_DEPLOYMENT", "OKE_BLUE_GREEN_DEPLOYMENT"], each.value.stage_type) ? try(each.value.kubernetes_manifest_deploy_artifact_ids, null) : null
-  helm_chart_deploy_artifact_id           = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.helm_chart_deploy_artifact_id, null) : null
-  release_name                            = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.release_name, null) : null
-  values_artifact_ids                     = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.values_artifact_ids, null) : null
-  are_hooks_enabled                       = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.are_hooks_enabled, null) : null
-  should_reuse_values                     = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.should_reuse_values, null) : null
-  should_not_wait                         = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.should_not_wait, null) : null
-  max_history                             = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.max_history, null) : null
-  timeout_in_seconds                      = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.timeout_in_seconds, null) : null
+  deploy_pipeline_id                           = oci_devops_deploy_pipeline.this[each.value.pipeline_key].id
+  deploy_stage_type                            = each.value.stage_type
+  display_name                                 = each.value.display_name
+  description                                  = coalesce(each.value.description, each.value.display_name)
+  oke_cluster_deploy_environment_id            = contains(["OKE_HELM_CHART_DEPLOYMENT", "OKE_DEPLOYMENT", "OKE_CANARY_DEPLOYMENT", "OKE_BLUE_GREEN_DEPLOYMENT"], each.value.stage_type) ? try(each.value.deploy_environment_id, null) : null
+  namespace                                    = contains(["OKE_DEPLOYMENT", "OKE_HELM_CHART_DEPLOYMENT"], each.value.stage_type) ? try(each.value.namespace, null) : null
+  kubernetes_manifest_deploy_artifact_ids      = contains(["OKE_DEPLOYMENT", "OKE_CANARY_DEPLOYMENT", "OKE_BLUE_GREEN_DEPLOYMENT"], each.value.stage_type) ? try(each.value.kubernetes_manifest_deploy_artifact_ids, null) : null
+  compute_instance_group_deploy_environment_id = each.value.stage_type == "COMPUTE_INSTANCE_GROUP_ROLLING_DEPLOYMENT" ? try(each.value.compute_instance_group_deploy_environment_id, try(each.value.deploy_environment_id, null)) : null
+  deploy_artifact_ids                          = each.value.stage_type == "COMPUTE_INSTANCE_GROUP_ROLLING_DEPLOYMENT" ? try(each.value.deploy_artifact_ids, null) : null
+  deployment_spec_deploy_artifact_id           = each.value.stage_type == "COMPUTE_INSTANCE_GROUP_ROLLING_DEPLOYMENT" ? try(each.value.deployment_spec_deploy_artifact_id, null) : null
+  helm_chart_deploy_artifact_id                = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.helm_chart_deploy_artifact_id, null) : null
+  release_name                                 = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.release_name, null) : null
+  values_artifact_ids                          = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.values_artifact_ids, null) : null
+  are_hooks_enabled                            = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.are_hooks_enabled, null) : null
+  should_reuse_values                          = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.should_reuse_values, null) : null
+  should_not_wait                              = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.should_not_wait, null) : null
+  max_history                                  = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.max_history, null) : null
+  timeout_in_seconds                           = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.timeout_in_seconds, null) : null
   oke_canary_deploy_stage_id = each.value.stage_type == "OKE_CANARY_TRAFFIC_SHIFT" ? try(
     oci_devops_deploy_stage.root["${each.value.pipeline_key}:${each.value.oke_canary_deploy_stage_key}"].id,
     try(oci_devops_deploy_stage.dependent["${each.value.pipeline_key}:${each.value.oke_canary_deploy_stage_key}"].id, null)
@@ -599,6 +626,15 @@ resource "oci_devops_deploy_stage" "second_dependent" {
     }
   }
 
+  dynamic "failure_policy" {
+    for_each = each.value.stage_type == "COMPUTE_INSTANCE_GROUP_ROLLING_DEPLOYMENT" && try(each.value.failure_policy, null) != null ? [each.value.failure_policy] : []
+    content {
+      failure_count      = try(failure_policy.value.failure_count, null)
+      failure_percentage = try(failure_policy.value.failure_percentage, null)
+      policy_type        = failure_policy.value.policy_type
+    }
+  }
+
   dynamic "blue_green_strategy" {
     for_each = each.value.stage_type == "OKE_BLUE_GREEN_DEPLOYMENT" && try(each.value.blue_green_strategy, null) != null ? [each.value.blue_green_strategy] : []
     content {
@@ -613,21 +649,24 @@ resource "oci_devops_deploy_stage" "second_dependent" {
 resource "oci_devops_deploy_stage" "third_dependent" {
   for_each = local.deploy_third_dependent_stage_map
 
-  deploy_pipeline_id                      = oci_devops_deploy_pipeline.this[each.value.pipeline_key].id
-  deploy_stage_type                       = each.value.stage_type
-  display_name                            = each.value.display_name
-  description                             = coalesce(each.value.description, each.value.display_name)
-  oke_cluster_deploy_environment_id       = contains(["OKE_HELM_CHART_DEPLOYMENT", "OKE_DEPLOYMENT", "OKE_CANARY_DEPLOYMENT", "OKE_BLUE_GREEN_DEPLOYMENT"], each.value.stage_type) ? try(each.value.deploy_environment_id, null) : null
-  namespace                               = contains(["OKE_DEPLOYMENT", "OKE_HELM_CHART_DEPLOYMENT"], each.value.stage_type) ? try(each.value.namespace, null) : null
-  kubernetes_manifest_deploy_artifact_ids = contains(["OKE_DEPLOYMENT", "OKE_CANARY_DEPLOYMENT", "OKE_BLUE_GREEN_DEPLOYMENT"], each.value.stage_type) ? try(each.value.kubernetes_manifest_deploy_artifact_ids, null) : null
-  helm_chart_deploy_artifact_id           = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.helm_chart_deploy_artifact_id, null) : null
-  release_name                            = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.release_name, null) : null
-  values_artifact_ids                     = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.values_artifact_ids, null) : null
-  are_hooks_enabled                       = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.are_hooks_enabled, null) : null
-  should_reuse_values                     = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.should_reuse_values, null) : null
-  should_not_wait                         = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.should_not_wait, null) : null
-  max_history                             = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.max_history, null) : null
-  timeout_in_seconds                      = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.timeout_in_seconds, null) : null
+  deploy_pipeline_id                           = oci_devops_deploy_pipeline.this[each.value.pipeline_key].id
+  deploy_stage_type                            = each.value.stage_type
+  display_name                                 = each.value.display_name
+  description                                  = coalesce(each.value.description, each.value.display_name)
+  oke_cluster_deploy_environment_id            = contains(["OKE_HELM_CHART_DEPLOYMENT", "OKE_DEPLOYMENT", "OKE_CANARY_DEPLOYMENT", "OKE_BLUE_GREEN_DEPLOYMENT"], each.value.stage_type) ? try(each.value.deploy_environment_id, null) : null
+  namespace                                    = contains(["OKE_DEPLOYMENT", "OKE_HELM_CHART_DEPLOYMENT"], each.value.stage_type) ? try(each.value.namespace, null) : null
+  kubernetes_manifest_deploy_artifact_ids      = contains(["OKE_DEPLOYMENT", "OKE_CANARY_DEPLOYMENT", "OKE_BLUE_GREEN_DEPLOYMENT"], each.value.stage_type) ? try(each.value.kubernetes_manifest_deploy_artifact_ids, null) : null
+  compute_instance_group_deploy_environment_id = each.value.stage_type == "COMPUTE_INSTANCE_GROUP_ROLLING_DEPLOYMENT" ? try(each.value.compute_instance_group_deploy_environment_id, try(each.value.deploy_environment_id, null)) : null
+  deploy_artifact_ids                          = each.value.stage_type == "COMPUTE_INSTANCE_GROUP_ROLLING_DEPLOYMENT" ? try(each.value.deploy_artifact_ids, null) : null
+  deployment_spec_deploy_artifact_id           = each.value.stage_type == "COMPUTE_INSTANCE_GROUP_ROLLING_DEPLOYMENT" ? try(each.value.deployment_spec_deploy_artifact_id, null) : null
+  helm_chart_deploy_artifact_id                = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.helm_chart_deploy_artifact_id, null) : null
+  release_name                                 = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.release_name, null) : null
+  values_artifact_ids                          = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.values_artifact_ids, null) : null
+  are_hooks_enabled                            = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.are_hooks_enabled, null) : null
+  should_reuse_values                          = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.should_reuse_values, null) : null
+  should_not_wait                              = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.should_not_wait, null) : null
+  max_history                                  = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.max_history, null) : null
+  timeout_in_seconds                           = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.timeout_in_seconds, null) : null
   oke_canary_deploy_stage_id = each.value.stage_type == "OKE_CANARY_TRAFFIC_SHIFT" ? try(
     oci_devops_deploy_stage.root["${each.value.pipeline_key}:${each.value.oke_canary_deploy_stage_key}"].id,
     try(
@@ -713,6 +752,15 @@ resource "oci_devops_deploy_stage" "third_dependent" {
     }
   }
 
+  dynamic "failure_policy" {
+    for_each = each.value.stage_type == "COMPUTE_INSTANCE_GROUP_ROLLING_DEPLOYMENT" && try(each.value.failure_policy, null) != null ? [each.value.failure_policy] : []
+    content {
+      failure_count      = try(failure_policy.value.failure_count, null)
+      failure_percentage = try(failure_policy.value.failure_percentage, null)
+      policy_type        = failure_policy.value.policy_type
+    }
+  }
+
   dynamic "blue_green_strategy" {
     for_each = each.value.stage_type == "OKE_BLUE_GREEN_DEPLOYMENT" && try(each.value.blue_green_strategy, null) != null ? [each.value.blue_green_strategy] : []
     content {
@@ -727,21 +775,24 @@ resource "oci_devops_deploy_stage" "third_dependent" {
 resource "oci_devops_deploy_stage" "fourth_dependent" {
   for_each = local.deploy_fourth_dependent_stage_map
 
-  deploy_pipeline_id                      = oci_devops_deploy_pipeline.this[each.value.pipeline_key].id
-  deploy_stage_type                       = each.value.stage_type
-  display_name                            = each.value.display_name
-  description                             = coalesce(each.value.description, each.value.display_name)
-  oke_cluster_deploy_environment_id       = contains(["OKE_HELM_CHART_DEPLOYMENT", "OKE_DEPLOYMENT", "OKE_CANARY_DEPLOYMENT", "OKE_BLUE_GREEN_DEPLOYMENT"], each.value.stage_type) ? try(each.value.deploy_environment_id, null) : null
-  namespace                               = contains(["OKE_DEPLOYMENT", "OKE_HELM_CHART_DEPLOYMENT"], each.value.stage_type) ? try(each.value.namespace, null) : null
-  kubernetes_manifest_deploy_artifact_ids = contains(["OKE_DEPLOYMENT", "OKE_CANARY_DEPLOYMENT", "OKE_BLUE_GREEN_DEPLOYMENT"], each.value.stage_type) ? try(each.value.kubernetes_manifest_deploy_artifact_ids, null) : null
-  helm_chart_deploy_artifact_id           = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.helm_chart_deploy_artifact_id, null) : null
-  release_name                            = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.release_name, null) : null
-  values_artifact_ids                     = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.values_artifact_ids, null) : null
-  are_hooks_enabled                       = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.are_hooks_enabled, null) : null
-  should_reuse_values                     = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.should_reuse_values, null) : null
-  should_not_wait                         = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.should_not_wait, null) : null
-  max_history                             = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.max_history, null) : null
-  timeout_in_seconds                      = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.timeout_in_seconds, null) : null
+  deploy_pipeline_id                           = oci_devops_deploy_pipeline.this[each.value.pipeline_key].id
+  deploy_stage_type                            = each.value.stage_type
+  display_name                                 = each.value.display_name
+  description                                  = coalesce(each.value.description, each.value.display_name)
+  oke_cluster_deploy_environment_id            = contains(["OKE_HELM_CHART_DEPLOYMENT", "OKE_DEPLOYMENT", "OKE_CANARY_DEPLOYMENT", "OKE_BLUE_GREEN_DEPLOYMENT"], each.value.stage_type) ? try(each.value.deploy_environment_id, null) : null
+  namespace                                    = contains(["OKE_DEPLOYMENT", "OKE_HELM_CHART_DEPLOYMENT"], each.value.stage_type) ? try(each.value.namespace, null) : null
+  kubernetes_manifest_deploy_artifact_ids      = contains(["OKE_DEPLOYMENT", "OKE_CANARY_DEPLOYMENT", "OKE_BLUE_GREEN_DEPLOYMENT"], each.value.stage_type) ? try(each.value.kubernetes_manifest_deploy_artifact_ids, null) : null
+  compute_instance_group_deploy_environment_id = each.value.stage_type == "COMPUTE_INSTANCE_GROUP_ROLLING_DEPLOYMENT" ? try(each.value.compute_instance_group_deploy_environment_id, try(each.value.deploy_environment_id, null)) : null
+  deploy_artifact_ids                          = each.value.stage_type == "COMPUTE_INSTANCE_GROUP_ROLLING_DEPLOYMENT" ? try(each.value.deploy_artifact_ids, null) : null
+  deployment_spec_deploy_artifact_id           = each.value.stage_type == "COMPUTE_INSTANCE_GROUP_ROLLING_DEPLOYMENT" ? try(each.value.deployment_spec_deploy_artifact_id, null) : null
+  helm_chart_deploy_artifact_id                = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.helm_chart_deploy_artifact_id, null) : null
+  release_name                                 = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.release_name, null) : null
+  values_artifact_ids                          = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.values_artifact_ids, null) : null
+  are_hooks_enabled                            = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.are_hooks_enabled, null) : null
+  should_reuse_values                          = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.should_reuse_values, null) : null
+  should_not_wait                              = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.should_not_wait, null) : null
+  max_history                                  = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.max_history, null) : null
+  timeout_in_seconds                           = each.value.stage_type == "OKE_HELM_CHART_DEPLOYMENT" ? try(each.value.timeout_in_seconds, null) : null
   oke_canary_deploy_stage_id = each.value.stage_type == "OKE_CANARY_TRAFFIC_SHIFT" ? try(
     oci_devops_deploy_stage.root["${each.value.pipeline_key}:${each.value.oke_canary_deploy_stage_key}"].id,
     try(
@@ -838,6 +889,15 @@ resource "oci_devops_deploy_stage" "fourth_dependent" {
     for_each = each.value.stage_type == "OKE_DEPLOYMENT" && try(each.value.rollback_policy, null) != null ? [each.value.rollback_policy] : []
     content {
       policy_type = rollback_policy.value.policy_type
+    }
+  }
+
+  dynamic "failure_policy" {
+    for_each = each.value.stage_type == "COMPUTE_INSTANCE_GROUP_ROLLING_DEPLOYMENT" && try(each.value.failure_policy, null) != null ? [each.value.failure_policy] : []
+    content {
+      failure_count      = try(failure_policy.value.failure_count, null)
+      failure_percentage = try(failure_policy.value.failure_percentage, null)
+      policy_type        = failure_policy.value.policy_type
     }
   }
 
