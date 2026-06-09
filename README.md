@@ -164,7 +164,7 @@ For `INVOKE_FUNCTION` stages, pass `function_deploy_environment_id`, `is_async`,
 }
 ```
 
-For `COMPUTE_INSTANCE_GROUP_ROLLING_DEPLOYMENT` stages, pass `compute_instance_group_deploy_environment_id`, `deploy_artifact_ids`, `deployment_spec_deploy_artifact_id`, and `rollout_policy`. The compute instance group environment is expected to be created outside this module, usually by `terraform-oci-fk-devops` as a deploy environment of type `COMPUTE_INSTANCE_GROUP`.
+For `COMPUTE_INSTANCE_GROUP_ROLLING_DEPLOYMENT` stages, pass `compute_instance_group_deploy_environment_id`, `deploy_artifact_ids`, `deployment_spec_deploy_artifact_id`, and `rollout_policy`. The `rollout_policy.policy_type` field is optional for backwards compatibility, but it should be set for compute instance group rolling deployments, for example to `COMPUTE_INSTANCE_GROUP_LINEAR_ROLLOUT_POLICY_BY_COUNT`. The compute instance group environment is expected to be created outside this module, usually by `terraform-oci-fk-devops` as a deploy environment of type `COMPUTE_INSTANCE_GROUP`.
 
 For OCI Functions deployment pipelines, use a `DEPLOY_FUNCTION` stage. The function deploy environment is expected to come from `terraform-oci-fk-devops` as a deploy environment of type `FUNCTION`, while the Docker image artifact is expected to be created by the DevOps resource module and delivered by the build pipeline.
 

@@ -94,6 +94,7 @@ variable "deploy_pipelines" {
         strategy_type = string
       }))
       rollout_policy = optional(object({
+        policy_type            = optional(string)
         batch_count            = number
         batch_delay_in_seconds = number
         batch_percentage       = number

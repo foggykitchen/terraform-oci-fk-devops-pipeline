@@ -386,6 +386,7 @@ resource "oci_devops_deploy_stage" "root" {
   dynamic "rollout_policy" {
     for_each = contains(["OKE_CANARY_TRAFFIC_SHIFT", "COMPUTE_INSTANCE_GROUP_ROLLING_DEPLOYMENT"], each.value.stage_type) && try(each.value.rollout_policy, null) != null ? [each.value.rollout_policy] : []
     content {
+      policy_type            = try(rollout_policy.value.policy_type, null)
       batch_count            = rollout_policy.value.batch_count
       batch_delay_in_seconds = rollout_policy.value.batch_delay_in_seconds
       batch_percentage       = rollout_policy.value.batch_percentage
@@ -492,6 +493,7 @@ resource "oci_devops_deploy_stage" "dependent" {
   dynamic "rollout_policy" {
     for_each = contains(["OKE_CANARY_TRAFFIC_SHIFT", "COMPUTE_INSTANCE_GROUP_ROLLING_DEPLOYMENT"], each.value.stage_type) && try(each.value.rollout_policy, null) != null ? [each.value.rollout_policy] : []
     content {
+      policy_type            = try(rollout_policy.value.policy_type, null)
       batch_count            = rollout_policy.value.batch_count
       batch_delay_in_seconds = rollout_policy.value.batch_delay_in_seconds
       batch_percentage       = rollout_policy.value.batch_percentage
@@ -604,6 +606,7 @@ resource "oci_devops_deploy_stage" "second_dependent" {
   dynamic "rollout_policy" {
     for_each = contains(["OKE_CANARY_TRAFFIC_SHIFT", "COMPUTE_INSTANCE_GROUP_ROLLING_DEPLOYMENT"], each.value.stage_type) && try(each.value.rollout_policy, null) != null ? [each.value.rollout_policy] : []
     content {
+      policy_type            = try(rollout_policy.value.policy_type, null)
       batch_count            = rollout_policy.value.batch_count
       batch_delay_in_seconds = rollout_policy.value.batch_delay_in_seconds
       batch_percentage       = rollout_policy.value.batch_percentage
@@ -730,6 +733,7 @@ resource "oci_devops_deploy_stage" "third_dependent" {
   dynamic "rollout_policy" {
     for_each = contains(["OKE_CANARY_TRAFFIC_SHIFT", "COMPUTE_INSTANCE_GROUP_ROLLING_DEPLOYMENT"], each.value.stage_type) && try(each.value.rollout_policy, null) != null ? [each.value.rollout_policy] : []
     content {
+      policy_type            = try(rollout_policy.value.policy_type, null)
       batch_count            = rollout_policy.value.batch_count
       batch_delay_in_seconds = rollout_policy.value.batch_delay_in_seconds
       batch_percentage       = rollout_policy.value.batch_percentage
@@ -870,6 +874,7 @@ resource "oci_devops_deploy_stage" "fourth_dependent" {
   dynamic "rollout_policy" {
     for_each = contains(["OKE_CANARY_TRAFFIC_SHIFT", "COMPUTE_INSTANCE_GROUP_ROLLING_DEPLOYMENT"], each.value.stage_type) && try(each.value.rollout_policy, null) != null ? [each.value.rollout_policy] : []
     content {
+      policy_type            = try(rollout_policy.value.policy_type, null)
       batch_count            = rollout_policy.value.batch_count
       batch_delay_in_seconds = rollout_policy.value.batch_delay_in_seconds
       batch_percentage       = rollout_policy.value.batch_percentage
