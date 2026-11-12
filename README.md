@@ -84,7 +84,7 @@ terraform-oci-fk-devops-pipeline/
 
 ```hcl
 module "fk_devops_pipeline" {
-  source = "git::https://github.com/foggykitchen/terraform-oci-fk-devops-pipeline.git?ref=v0.1.0"
+  source = "git::https://github.com/foggykitchen/terraform-oci-fk-devops-pipeline.git?ref=v0.2.0"
 
   project_id = var.project_id
 
@@ -233,3 +233,18 @@ See [LICENSE](LICENSE) for details.
 ---
 
 © 2026 [FoggyKitchen.com](https://foggykitchen.com) - Cloud. Code. Clarity.
+
+## Requirements
+
+| Requirement | Version |
+|---|---|
+| OpenTofu | >= 1.11.0 (tested with 1.11.6) |
+| oracle/oci | >= 9.12.1, < 10.0.0 |
+
+## BREAKING: requires OCI provider >= 9.12.1
+
+OCI provider 6.x, 7.x and 8.x are no longer supported. Upgrade all composed modules together, run `tofu init -upgrade`, and review a plan before applying. Existing module inputs, outputs and resource addresses are preserved.
+
+Every embedded example is covered by a plan-only mocked test. CI uses OpenTofu 1.11.6 and exact OCI 9.12.1. Mocked plans verify configuration and expressions; they do not verify tenancy permissions, regional availability or service limits.
+
+Run the same checks locally with `python3 scripts/oci9_check.py --root .` (or an example path). The helper materializes synthetic IDs in a temporary copy. For unpublished integration branches only, `OCI9_ALLOW_UNRELEASED=1` permits an explicitly logged fallback from the proposed tag to `oci-provider-9`; released tags always take precedence. `--modules-dir /path/to/checkouts` tests local migrated dependencies.
